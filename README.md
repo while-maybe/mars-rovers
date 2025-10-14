@@ -65,8 +65,10 @@ printf "5 5\n1 2 N\nLMLMLMLMM\n3 3 E\nMMRMMRMRRM" | go run ./cmd/cli
 *Using `printf` or `echo -e` is recommended for correctly interpreting newline characters.*
 
 #### **Expected Output**
-For the standard test case, the output will be:
+For the proposed standard test case and regardless of the input method chosen, the output will be:
+
 ```
+info: Mission complete. Final rover positions:
 1 3 N
 5 1 E
 ```
