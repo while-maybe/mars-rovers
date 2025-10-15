@@ -331,7 +331,6 @@ func TestRunRover(t *testing.T) {
 			result, err := tc.mc.RunRover(tc.rover, tc.commands)
 
 			if tc.wantErr != nil {
-				require.Error(t, err)
 				require.ErrorIs(t, err, tc.wantErr)
 				return
 			}
