@@ -1,6 +1,7 @@
 package app
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"mars/internal/config"
@@ -19,6 +20,14 @@ type App struct {
 	cfg    *config.Config
 }
 
+var (
+	ErrAppInput       = errors.New("error reading input")
+	ErrAppParsing     = errors.New("error parsing input")
+	ErrAppCreatingMC  = errors.New("error creating mission control")
+	ErrAppExecMission = errors.New("error executing mission")
+)
+
+// NewApp takes injects a parser, mission control factory, an io.Reader and an io.Writer returning a new application struct with all its dependencies
 func NewApp(p Parser, mcf rover.MissionControlFactory, i io.Reader, o io.Writer) *App {
 	return &App{
 		parser: p,
@@ -28,20 +37,21 @@ func NewApp(p Parser, mcf rover.MissionControlFactory, i io.Reader, o io.Writer)
 	}
 }
 
+// Run starts the application
 func (a *App) Run() error {
 	inputBytes, err := io.ReadAll(a.input)
 	if err != nil {
-		return fmt.Errorf("error reading input: %w", err)
+		return fmt.Errorf("%w: %v", ErrAppInput, err)
 	}
 
 	plateau, instructions, err := a.parser.Parse(string(inputBytes))
 	if err != nil {
-		return fmt.Errorf("error parsing input: %w", err)
+		return fmt.Errorf("%w: %s", ErrAppParsing, err)
 	}
 
 	mc, err := a.mcf.Create(plateau)
 	if err != nil {
-		return fmt.Errorf("error creating mission control: %w", err)
+		return fmt.Errorf("%w: %v", ErrAppCreatingMC, err)
 	}
 
 	missionControlInput := &rover.MissionControlInput{
@@ -50,7 +60,7 @@ func (a *App) Run() error {
 
 	output, err := mc.Execute(missionControlInput)
 	if err != nil {
-		return fmt.Errorf("error executing mission: %w", err)
+		return fmt.Errorf("%w: %v", ErrAppExecMission, err)
 	}
 
 	fmt.Fprintf(a.output, "info: Mission complete. Final rover positions:")

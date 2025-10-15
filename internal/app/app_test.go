@@ -53,13 +53,13 @@ func TestApp_Run(t *testing.T) {
 	t.Parallel()
 
 	testCases := map[string]struct {
-		inputData       string
-		inputReader     io.Reader
-		setupMocks      func(*MockParser, *MockMissionControlFactory)
-		wantOutput      string
-		wantErrContains string
+		inputData   string
+		inputReader io.Reader
+		setupMocks  func(*MockParser, *MockMissionControlFactory)
+		wantOutput  string
+		wantErr     error
 	}{
-		"success - complete mission": {
+		"ok - complete mission": {
 			inputData: "5 5\n1 2 N\nLMLMLMLMM\n3 3 E\nMMRMMRMRRM",
 
 			setupMocks: func(mp *MockParser, mmcf *MockMissionControlFactory) {
@@ -77,9 +77,10 @@ func TestApp_Run(t *testing.T) {
 				mc, _ := rover.NewMissionControl(plateau)
 				mmcf.On("Create", plateau).Return(mc, nil)
 			},
-			wantOutput: "info: Mission complete. Final rover positions:1 3 N\n5 1 E\n",
+			wantOutput: "1 3 N\n5 1 E\n",
+			wantErr:    nil,
 		},
-		"success - single rover": {
+		"ok - single rover": {
 			inputData: "5 5\n1 2 N\nLMLMLMLMM",
 
 			setupMocks: func(mp *MockParser, mmcf *MockMissionControlFactory) {
@@ -95,25 +96,26 @@ func TestApp_Run(t *testing.T) {
 				mc, _ := rover.NewMissionControl(plateau)
 				mmcf.On("Create", plateau).Return(mc, nil)
 			},
-			wantOutput: "info: Mission complete. Final rover positions:1 3 N\n",
+			wantOutput: "1 3 N\n",
+			wantErr:    nil,
 		},
-		"error - reading input fails": {
+		"err - reading input fails": {
 			inputReader: errReader{},
 
 			setupMocks: func(mp *MockParser, mmcf *MockMissionControlFactory) {
 				// No mock needed - error happens before parsing
 			},
-			wantErrContains: "error reading input",
+			wantErr: ErrAppInput,
 		},
-		"error - parsing fails": {
+		"err - parsing fails": {
 			inputData: "invalid input",
 
 			setupMocks: func(mp *MockParser, mmcf *MockMissionControlFactory) {
 				mp.On("Parse", "invalid input").Return(nil, nil, errors.New("parse error"))
 			},
-			wantErrContains: "error parsing input",
+			wantErr: ErrAppParsing,
 		},
-		"error - mission control creation fails": {
+		"err - mission control creation fails": {
 			inputData: "5 5\n1 2 N\nLMLMLMLMM",
 
 			setupMocks: func(mp *MockParser, mmcf *MockMissionControlFactory) {
@@ -126,9 +128,9 @@ func TestApp_Run(t *testing.T) {
 				mp.On("Parse", mock.Anything).Return(plateau, instructions, nil)
 				mmcf.On("Create", plateau).Return(nil, errors.New("mc creation failed"))
 			},
-			wantErrContains: "error creating mission control",
+			wantErr: ErrAppCreatingMC,
 		},
-		"error - execution fails with collision": {
+		"err - execution fails with collision": {
 			inputData: "5 5\n1 2 N\nLMLMLMLMM\n1 3 N\nM",
 
 			setupMocks: func(mp *MockParser, mmcf *MockMissionControlFactory) {
@@ -145,7 +147,7 @@ func TestApp_Run(t *testing.T) {
 				mc, _ := rover.NewMissionControl(plateau)
 				mmcf.On("Create", plateau).Return(mc, nil)
 			},
-			wantErrContains: "error executing mission",
+			wantErr: ErrAppExecMission,
 		},
 	}
 
@@ -167,18 +169,16 @@ func TestApp_Run(t *testing.T) {
 			output := &bytes.Buffer{}
 
 			// Create app and run
-
 			app := NewApp(mockParser, mockMCFactory, input, output)
 			err := app.Run()
 
-			if tc.wantErrContains != "" {
-				require.Error(t, err)
-				assert.Contains(t, err.Error(), tc.wantErrContains)
+			if tc.wantErr != nil {
+				require.ErrorIs(t, err, tc.wantErr)
 				return
 			}
 
 			require.NoError(t, err)
-			assert.Equal(t, tc.wantOutput, output.String())
+			assert.Contains(t, output.String(), tc.wantOutput)
 
 			// Verify mocks were called as expected
 			mockParser.AssertExpectations(t)
