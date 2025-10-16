@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"mars/internal/config"
 	"mars/internal/rover"
 	"testing"
 
@@ -11,7 +12,9 @@ import (
 func createTestPlateau(t *testing.T, x, y int) *rover.Plateau {
 	t.Helper()
 
-	testPlateau, _ := rover.NewPlateau(x, y)
+	cfg := config.Default()
+
+	testPlateau, _ := rover.NewPlateau(x, y, cfg.MinPlateauX, cfg.MinPlateauY)
 	return testPlateau
 }
 
@@ -199,11 +202,13 @@ func TestParsePlateauLine(t *testing.T) {
 		"err - ErrParsePlateauY":                     {input: "10 XYZ", wantPlateau: nil, wantErr: ErrParsePlateauY},
 	}
 
+	cfg := config.Default()
+
 	for name, tc := range testCases {
 
 		t.Run(name, func(t *testing.T) {
 
-			newPlateauLine, err := parsePlateauLine(tc.input)
+			newPlateauLine, err := parsePlateauLine(tc.input, cfg)
 
 			if tc.wantErr != nil {
 				require.ErrorIs(t, err, tc.wantErr)
@@ -277,11 +282,13 @@ LMXLM`, // 'X' is an invalid command
 		},
 	}
 
+	cfg := config.Default()
+
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			p := New() // Create a new parser instance
 
-			gotPlateau, gotInstructions, err := p.Parse(tc.input)
+			gotPlateau, gotInstructions, err := p.Parse(tc.input, cfg)
 
 			if tc.wantErr != nil {
 				assert.ErrorIs(t, err, tc.wantErr)

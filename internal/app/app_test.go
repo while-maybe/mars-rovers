@@ -20,7 +20,7 @@ type MockParser struct {
 	mock.Mock
 }
 
-func (m *MockParser) Parse(input string) (*rover.Plateau, []rover.RoverInstruction, error) {
+func (m *MockParser) Parse(input string, cfg *config.Config) (*rover.Plateau, []rover.RoverInstruction, error) {
 	args := m.Called(input)
 
 	if args.Get(0) == nil {
@@ -53,6 +53,8 @@ func (e errReader) Read(p []byte) (n int, err error) {
 func TestApp_Run(t *testing.T) {
 	t.Parallel()
 
+	cfg := config.Default()
+
 	testCases := map[string]struct {
 		inputData   string
 		inputReader io.Reader
@@ -64,7 +66,7 @@ func TestApp_Run(t *testing.T) {
 			inputData: "5 5\n1 2 N\nLMLMLMLMM\n3 3 E\nMMRMMRMRRM",
 
 			setupMocks: func(mp *MockParser, mmcf *MockMissionControlFactory) {
-				plateau, _ := rover.NewPlateau(5, 5)
+				plateau, _ := rover.NewPlateau(5, 5, cfg.MinPlateauX, cfg.MinPlateauY)
 				pos1, _ := rover.NewPosition(plateau, rover.NewCoordinates(1, 2), rover.N)
 				pos2, _ := rover.NewPosition(plateau, rover.NewCoordinates(3, 3), rover.E)
 
@@ -85,7 +87,7 @@ func TestApp_Run(t *testing.T) {
 			inputData: "5 5\n1 2 N\nLMLMLMLMM",
 
 			setupMocks: func(mp *MockParser, mmcf *MockMissionControlFactory) {
-				plateau, _ := rover.NewPlateau(5, 5)
+				plateau, _ := rover.NewPlateau(5, 5, cfg.MinPlateauX, cfg.MinPlateauY)
 				pos1, _ := rover.NewPosition(plateau, rover.NewCoordinates(1, 2), rover.N)
 
 				instructions := []rover.RoverInstruction{
@@ -120,7 +122,7 @@ func TestApp_Run(t *testing.T) {
 			inputData: "5 5\n1 2 N\nLMLMLMLMM",
 
 			setupMocks: func(mp *MockParser, mmcf *MockMissionControlFactory) {
-				plateau, _ := rover.NewPlateau(5, 5)
+				plateau, _ := rover.NewPlateau(5, 5, cfg.MinPlateauX, cfg.MinPlateauY)
 				pos1, _ := rover.NewPosition(plateau, rover.NewCoordinates(1, 2), rover.N)
 				instructions := []rover.RoverInstruction{
 					{InitialPosition: pos1, Commands: "LMLMLMLMM"},
@@ -135,7 +137,7 @@ func TestApp_Run(t *testing.T) {
 			inputData: "5 5\n1 2 N\nLMLMLMLMM\n1 3 N\nM",
 
 			setupMocks: func(mp *MockParser, mmcf *MockMissionControlFactory) {
-				plateau, _ := rover.NewPlateau(5, 5)
+				plateau, _ := rover.NewPlateau(5, 5, cfg.MinPlateauX, cfg.MinPlateauY)
 				pos1, _ := rover.NewPosition(plateau, rover.NewCoordinates(1, 2), rover.N)
 				pos2, _ := rover.NewPosition(plateau, rover.NewCoordinates(1, 3), rover.N)
 				instructions := []rover.RoverInstruction{
@@ -151,8 +153,6 @@ func TestApp_Run(t *testing.T) {
 			wantErr: ErrAppExecMission,
 		},
 	}
-
-	cfg := config.Default()
 
 	for name, tc := range testCases {
 
