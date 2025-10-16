@@ -2,24 +2,18 @@ package main
 
 import (
 	"bufio"
-	"flag"
 	"fmt"
 	"io"
 	"log"
 	"mars/internal/app"
+	"mars/internal/config"
 	"mars/internal/parser"
 	"mars/internal/rover"
 	"os"
 )
 
-type Config struct {
-	FilePath        string
-	MinPlateauSizeX int
-	MinPlateauSizeY int
-}
-
 func main() {
-	cfg := parseFlags()
+	cfg := config.ParseFlags()
 
 	inputReader, cleanup, err := getInputReader(cfg)
 	if err != nil {
@@ -29,24 +23,12 @@ func main() {
 
 	bufferedReader := bufio.NewReader(inputReader)
 
-	if err := run(bufferedReader); err != nil {
+	if err := run(bufferedReader, cfg); err != nil {
 		log.Fatalf("FATAL: Application failed: %v", err)
 	}
 }
 
-func parseFlags() *Config {
-	cfg := &Config{}
-
-	flag.StringVar(&cfg.FilePath, "file", "", "Input file. If not provided, reads from stdin.")
-	flag.IntVar(&cfg.MinPlateauSizeX, "min-size-x", 2, "Minimum size X for plateau (optional)")
-	flag.IntVar(&cfg.MinPlateauSizeY, "min-size-y", 2, "Minimum size Y for plateau (optional)")
-
-	flag.Parse()
-
-	return cfg
-}
-
-func getInputReader(cfg *Config) (io.Reader, func(), error) {
+func getInputReader(cfg *config.Config) (io.Reader, func(), error) {
 	noOpCleanup := func() {}
 
 	// check to see if a FilePath has been provided
@@ -79,11 +61,11 @@ func getInputReader(cfg *Config) (io.Reader, func(), error) {
 	return os.Stdin, noOpCleanup, nil
 }
 
-func run(reader io.Reader) error {
+func run(reader io.Reader, cfg *config.Config) error {
 	p := parser.New()
 	mcf := rover.NewMissionControlFactory()
 
-	app := app.NewApp(p, mcf, reader, os.Stdout)
+	app := app.NewApp(p, mcf, reader, os.Stdout, cfg)
 
 	return app.Run()
 }
