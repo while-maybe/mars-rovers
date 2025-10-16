@@ -9,7 +9,7 @@ import (
 )
 
 type Parser interface {
-	Parse(input string) (*rover.Plateau, []rover.RoverInstruction, error)
+	Parse(input string, cfg *config.Config) (*rover.Plateau, []rover.RoverInstruction, error)
 }
 
 type App struct {
@@ -45,7 +45,7 @@ func (a *App) Run() error {
 		return fmt.Errorf("%w: %v", ErrAppInput, err)
 	}
 
-	plateau, instructions, err := a.parser.Parse(string(inputBytes))
+	plateau, instructions, err := a.parser.Parse(string(inputBytes), a.cfg)
 	if err != nil {
 		return fmt.Errorf("%w: %s", ErrAppParsing, err)
 	}

@@ -3,6 +3,7 @@ package parser
 import (
 	"errors"
 	"fmt"
+	"mars/internal/config"
 	"mars/internal/rover"
 
 	"strconv"
@@ -27,7 +28,7 @@ func New() *Parser {
 	return &Parser{}
 }
 
-func (p *Parser) Parse(input string) (*rover.Plateau, []rover.RoverInstruction, error) {
+func (p *Parser) Parse(input string, cfg *config.Config) (*rover.Plateau, []rover.RoverInstruction, error) {
 	lines := strings.Split(strings.TrimSpace(input), "\n")
 
 	// reject inputs that are not one plateau line + n * pair of instruction lines (a pair per rover with a min of 1 pair)
@@ -36,7 +37,7 @@ func (p *Parser) Parse(input string) (*rover.Plateau, []rover.RoverInstruction, 
 	}
 
 	// parse plateau
-	plateau, err := parsePlateauLine(lines[0])
+	plateau, err := parsePlateauLine(lines[0], cfg)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -69,7 +70,7 @@ func (p *Parser) Parse(input string) (*rover.Plateau, []rover.RoverInstruction, 
 }
 
 // parsePlateauLine takes a string and returns a Plateau pointer or an error if the given data is not a line of pair of integers
-func parsePlateauLine(line string) (*rover.Plateau, error) {
+func parsePlateauLine(line string, cfg *config.Config) (*rover.Plateau, error) {
 	parts := strings.Fields(strings.TrimSpace(line))
 
 	if len(parts) != 2 {
@@ -86,7 +87,7 @@ func parsePlateauLine(line string) (*rover.Plateau, error) {
 		return nil, fmt.Errorf("%w: %v %v", ErrParsePlateauY, parts[1], err)
 	}
 
-	return rover.NewPlateau(maxX, maxY)
+	return rover.NewPlateau(maxX, maxY, cfg.MinPlateauX, cfg.MinPlateauY)
 }
 
 // parsePositionLine
