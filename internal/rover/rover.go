@@ -33,11 +33,6 @@ const (
 	CmdRight Command = 'R' // Right
 )
 
-var (
-	minPlateauX = 2
-	minPlateauY = 2
-)
-
 type Coordinates struct {
 	x int
 	y int
@@ -194,9 +189,10 @@ func (p *Position) set(newPos Position) {
 }
 
 // NewPlateau returns a pointer to a new Plateau, validating against minimum dimensions and returning an error accordingly
-func NewPlateau(maxX, maxY int) (*Plateau, error) {
-	if maxX < minPlateauX || maxY < minPlateauY {
-		return nil, ErrPlateauTooSmall
+func NewPlateau(maxX, maxY, minPlateauSizeX, minPlateauSizeY int) (*Plateau, error) {
+	// FIXME should get config info here
+	if maxX < minPlateauSizeX || maxY < minPlateauSizeY {
+		return nil, fmt.Errorf("%w: plateau must be at least %d x %d", ErrPlateauTooSmall, minPlateauSizeX, minPlateauSizeY)
 	}
 
 	return &Plateau{
