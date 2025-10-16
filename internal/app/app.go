@@ -1,7 +1,6 @@
 package app
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"mars/internal/config"
@@ -19,13 +18,6 @@ type App struct {
 	output io.Writer
 	cfg    *config.Config
 }
-
-var (
-	ErrAppInput       = errors.New("error reading input")
-	ErrAppParsing     = errors.New("error parsing input")
-	ErrAppCreatingMC  = errors.New("error creating mission control")
-	ErrAppExecMission = errors.New("error executing mission")
-)
 
 // NewApp takes injects a parser, mission control factory, an io.Reader and an io.Writer returning a new application struct with all its dependencies
 func NewApp(p Parser, mcf rover.MissionControlFactory, i io.Reader, o io.Writer, cfg *config.Config) *App {
