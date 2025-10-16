@@ -3,6 +3,7 @@ package main_test
 import (
 	"testing"
 
+	"mars/internal/config"
 	"mars/internal/parser"
 	"mars/internal/rover"
 
@@ -18,9 +19,11 @@ LMLMLMLMM
 3 3 E
 MMRMMRMRRM`
 
+	cfg := config.Default()
+
 	// Parse input
 	p := parser.New()
-	plateau, instructions, err := p.Parse(input)
+	plateau, instructions, err := p.Parse(input, cfg)
 	require.NoError(t, err)
 
 	// Create mission control
@@ -53,8 +56,10 @@ L
 3 1 N
 MM`
 
+	cfg := config.Default()
+
 	p := parser.New()
-	plateau, instructions, err := p.Parse(input)
+	plateau, instructions, err := p.Parse(input, cfg)
 	require.NoError(t, err)
 
 	factory := rover.NewMissionControlFactory()
@@ -83,8 +88,10 @@ MM
 5 9 S
 MMM`
 
+	cfg := config.Default()
+
 	p := parser.New()
-	plateau, instructions, err := p.Parse(input)
+	plateau, instructions, err := p.Parse(input, cfg)
 	require.NoError(t, err)
 
 	factory := rover.NewMissionControlFactory()
@@ -112,8 +119,10 @@ MMM
 5 5 N
 MMM`
 
+	cfg := config.Default()
+
 	p := parser.New()
-	plateau, instructions, err := p.Parse(input)
+	plateau, instructions, err := p.Parse(input, cfg)
 	require.NoError(t, err)
 
 	factory := rover.NewMissionControlFactory()
@@ -139,8 +148,10 @@ func TestComplexRoverNavigationPattern(t *testing.T) {
 2 2 N
 MMMRMMMLMM`
 
+	cfg := config.Default()
+
 	p := parser.New()
-	plateau, instructions, err := p.Parse(input)
+	plateau, instructions, err := p.Parse(input, cfg)
 	require.NoError(t, err)
 
 	factory := rover.NewMissionControlFactory()

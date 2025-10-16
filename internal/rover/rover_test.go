@@ -1,6 +1,7 @@
 package rover
 
 import (
+	"mars/internal/config"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -63,10 +64,12 @@ func TestNewPlateau(t *testing.T) {
 		},
 	}
 
+	cfg := config.Default()
+
 	for name, testCase := range testCases {
 		t.Run(name, func(t *testing.T) {
 
-			newPlateau, err := NewPlateau(testCase.maxX, testCase.maxY)
+			newPlateau, err := NewPlateau(testCase.maxX, testCase.maxY, cfg.MinPlateauX, cfg.MinPlateauY)
 			assert.Equal(t, newPlateau, testCase.wantPlateau)
 
 			if testCase.wantErr != nil {
@@ -389,7 +392,9 @@ func TestMove(t *testing.T) {
 func createTestPlateau(t *testing.T, x, y int) *Plateau {
 	t.Helper()
 
-	testPlateau, _ := NewPlateau(x, y)
+	cfg := config.Default()
+
+	testPlateau, _ := NewPlateau(x, y, cfg.MinPlateauX, cfg.MinPlateauY)
 	return testPlateau
 }
 
