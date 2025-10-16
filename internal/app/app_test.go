@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 
+	"mars/internal/config"
 	"mars/internal/rover"
 	"strings"
 	"testing"
@@ -151,7 +152,10 @@ func TestApp_Run(t *testing.T) {
 		},
 	}
 
+	cfg := config.Default()
+
 	for name, tc := range testCases {
+
 		t.Run(name, func(t *testing.T) {
 			// Setup mocks
 			mockParser := new(MockParser)
@@ -169,7 +173,7 @@ func TestApp_Run(t *testing.T) {
 			output := &bytes.Buffer{}
 
 			// Create app and run
-			app := NewApp(mockParser, mockMCFactory, input, output)
+			app := NewApp(mockParser, mockMCFactory, input, output, cfg)
 			err := app.Run()
 
 			if tc.wantErr != nil {
@@ -190,13 +194,15 @@ func TestApp_Run(t *testing.T) {
 func TestNewApp(t *testing.T) {
 	t.Parallel()
 
+	cfg := config.Default()
+
 	mockParser := new(MockParser)
 	mockMCFactory := new(MockMissionControlFactory)
 
 	input := strings.NewReader("test input")
 	output := &bytes.Buffer{}
 
-	app := NewApp(mockParser, mockMCFactory, input, output)
+	app := NewApp(mockParser, mockMCFactory, input, output, cfg)
 
 	require.NotNil(t, app)
 	assert.Equal(t, mockParser, app.parser)

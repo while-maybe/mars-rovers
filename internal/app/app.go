@@ -28,12 +28,13 @@ var (
 )
 
 // NewApp takes injects a parser, mission control factory, an io.Reader and an io.Writer returning a new application struct with all its dependencies
-func NewApp(p Parser, mcf rover.MissionControlFactory, i io.Reader, o io.Writer) *App {
+func NewApp(p Parser, mcf rover.MissionControlFactory, i io.Reader, o io.Writer, cfg *config.Config) *App {
 	return &App{
 		parser: p,
 		mcf:    mcf,
 		input:  i,
 		output: o,
+		cfg:    cfg,
 	}
 }
 
