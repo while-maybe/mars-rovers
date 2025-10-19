@@ -56,8 +56,6 @@ func (a *App) Run() error {
 		return fmt.Errorf("%w: %v", ErrAppExecMission, err)
 	}
 
-	fmt.Fprintf(a.output, "info: Mission complete. Final rover positions:")
-	fmt.Println()
 	for _, singleRoverOutput := range output {
 		fmt.Fprintln(a.output, singleRoverOutput)
 	}
