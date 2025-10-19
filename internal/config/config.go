@@ -55,23 +55,19 @@ func Default() *Config {
 }
 
 // ParseFlags returns a pointer to a new Config struct from user provided cli flags
-func ParseFlags(args []string) (*Config, error) {
+func ParseFlags() (*Config, error) {
 	cfg := &Config{}
 
-	flags := flag.NewFlagSet("mars-rovers", flag.ContinueOnError)
-
 	// flags for cli mode
-	flags.StringVar(&cfg.FilePath, "file", "", "Input file. If not provided, reads from stdin.")
-	flags.IntVar(&cfg.MinPlateauX, "min-size-x", DefaultMinSizeX, "Minimum size X for plateau (optional)")
-	flags.IntVar(&cfg.MinPlateauY, "min-size-y", DefaultMinSizeY, "Minimum size Y for plateau (optional)")
+	flag.StringVar(&cfg.FilePath, "file", "", "Input file. If not provided, reads from stdin.")
+	flag.IntVar(&cfg.MinPlateauX, "min-size-x", DefaultMinSizeX, "Minimum size X for plateau (optional)")
+	flag.IntVar(&cfg.MinPlateauY, "min-size-y", DefaultMinSizeY, "Minimum size Y for plateau (optional)")
 
 	// flags for webapi mode
 	webAPIFlag := flag.Bool("webapi", false, "run in webapi server mode")
-	flags.StringVar(&cfg.SrvAddr, "addr", DefaultServerAddr, "port for webapi server")
+	flag.StringVar(&cfg.SrvAddr, "addr", DefaultServerAddr, "port for webapi server")
 
-	if err := flags.Parse(args); err != nil {
-		return nil, err
-	}
+	flag.Parse()
 
 	// assign operating mode based on -webapi flag being present
 	if *webAPIFlag {
