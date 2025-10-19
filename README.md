@@ -9,7 +9,8 @@ The core philosophy was not merely to solve the puzzle, but to engineer a soluti
 The exercise gave ample room for decision making, so the following design choices were made:
 
 **Plateau dimensions:**
-By default, the plateau cannot be smaller than a 2 * 2 grid (but is configurable via cli switches)
+By default, the plateau cannot be smaller than a 2 * 2 grid (but is configurable via cli flags)
+
 
 **Rover placement and movement:**
 Placing a rover at a location where another rover already exists will not be possible
@@ -64,11 +65,26 @@ printf "5 5\n1 2 N\nLMLMLMLMM\n3 3 E\nMMRMMRMRRM" | go run ./cmd/cli
 ```
 *Using `printf` or `echo -e` is recommended for correctly interpreting newline characters.*
 
+
+#### **From Web API (REST)**
+
+Use the `-webapi` flag to switch to web api mode.
+Use the `-addr` flag to modify the default (:8080) port.
+
+Send a POST request with the input data in the body and send it to the `/mcontrol` endpoint (the default url when enabling `-webapi` are `localhost:8080/mcontrol`) like so:
+```bash
+5 5
+1 2 N
+LMLMLMLMM
+3 3 E
+MMRMMRMRRM
+```
+*for the moment it's a text only API, JSON might be implemented*
+
 #### **Expected Output**
 For the proposed standard test case and regardless of the input method chosen, the output will be:
 
 ```
-info: Mission complete. Final rover positions:
 1 3 N
 5 1 E
 ```
@@ -112,8 +128,11 @@ The application is split into three distinct packages, each with a single respon
 ```
 internal/
 ├── app       # Orchestrator
+├── config    # Configuration logic
 ├── parser    # Input Adapter
-└── rover     # Core Domain
+├── rover     # Core Domain
+└── webapi    # HTTP server & Handlers
+
 ```
 
 *   **`rover`:** This is the heart of the application. It contains a pure, self-contained domain model with zero dependencies on other packages. It defines the "nouns" (`Rover`, `Plateau`) and "verbs" (`move`, `turnLeft`) of the simulation. Its logic is entirely independent of how the input is provided or how the output is displayed.

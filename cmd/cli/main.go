@@ -9,23 +9,56 @@ import (
 	"mars/internal/config"
 	"mars/internal/parser"
 	"mars/internal/rover"
+	"mars/internal/webapi"
 	"os"
 )
 
 func main() {
-	cfg := config.ParseFlags()
+	// parse cmd line flags
+	cfg, err := config.ParseFlags()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
 
+	// dispatch to the right runner function
+	switch cfg.OpMode {
+	case config.ModeCLI:
+		if err := runCLI(cfg); err != nil {
+			log.Fatalf("FATAL: CLI mode failed: %v", err)
+		}
+
+	case config.ModeWebAPI:
+		if err := runWebAPI(cfg); err != nil {
+			log.Fatalf("FATAL: Web API mode failed: %v", err)
+		}
+
+	default:
+		log.Fatalf("FATAL: Unknown operating mode configured.")
+	}
+}
+
+func runCLI(cfg *config.Config) error {
 	inputReader, cleanup, err := getInputReader(cfg)
 	if err != nil {
-		log.Fatalf("FATAL: %v", err)
+		return fmt.Errorf("failed to get input: %w", err)
 	}
 	defer cleanup()
 
+	// if user accidentally specifies a very large file a buffered reader should handle this
 	bufferedReader := bufio.NewReader(inputReader)
 
-	if err := run(bufferedReader, cfg); err != nil {
-		log.Fatalf("FATAL: Application failed: %v", err)
-	}
+	p := parser.New()
+	mcf := rover.NewMissionControlFactory()
+
+	app := app.NewApp(p, mcf, bufferedReader, os.Stdout, cfg)
+	return app.Run()
+}
+
+func runWebAPI(cfg *config.Config) error {
+	server := webapi.NewServer(cfg)
+
+	return server.Start()
 }
 
 func getInputReader(cfg *config.Config) (io.Reader, func(), error) {
@@ -51,21 +84,9 @@ func getInputReader(cfg *config.Config) (io.Reader, func(), error) {
 
 	if (stat.Mode() & os.ModeCharDevice) != 0 {
 		fmt.Fprintln(os.Stderr, "Usage: program -file <path> OR echo 'data' | program")
-		fmt.Fprintln(os.Stderr, "Options:")
-		fmt.Fprintln(os.Stderr, "  -min-size-x int  Minimum size X for plateau")
-		fmt.Fprintln(os.Stderr, "  -min-size-y int  Minimum size Y for plateau")
-
+		fmt.Fprintln(os.Stderr, "\nNo input provided. Use -file flag or pipe data to stdin.")
 		return nil, noOpCleanup, fmt.Errorf("no input source provided")
 	}
 
 	return os.Stdin, noOpCleanup, nil
-}
-
-func run(reader io.Reader, cfg *config.Config) error {
-	p := parser.New()
-	mcf := rover.NewMissionControlFactory()
-
-	app := app.NewApp(p, mcf, reader, os.Stdout, cfg)
-
-	return app.Run()
 }
