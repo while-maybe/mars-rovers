@@ -15,7 +15,7 @@ import (
 
 func main() {
 	// parse cmd line flags
-	cfg, err := config.ParseFlags()
+	cfg, err := config.ParseFlags(os.Args[:1])
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)
