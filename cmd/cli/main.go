@@ -56,7 +56,10 @@ func runCLI(cfg *config.Config) error {
 }
 
 func runWebAPI(cfg *config.Config) error {
-	server := webapi.NewServer(cfg)
+
+	p := parser.New()
+	mcf := rover.NewMissionControlFactory()
+	server := webapi.NewServer(cfg, p, mcf)
 
 	return server.Start()
 }
