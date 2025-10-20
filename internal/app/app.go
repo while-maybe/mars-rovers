@@ -34,7 +34,7 @@ func NewApp(p Parser, mcf rover.MissionControlFactory, i io.Reader, o io.Writer,
 func (a *App) Run() error {
 	inputBytes, err := io.ReadAll(a.input)
 	if err != nil {
-		return fmt.Errorf("%w: %v", ErrAppInput, err)
+		return fmt.Errorf("%w: %w", ErrAppInput, err)
 	}
 
 	plateau, instructions, err := a.parser.Parse(string(inputBytes), a.cfg)
@@ -44,7 +44,7 @@ func (a *App) Run() error {
 
 	mc, err := a.mcf.Create(plateau)
 	if err != nil {
-		return fmt.Errorf("%w: %v", ErrAppCreatingMC, err)
+		return fmt.Errorf("%w: %w", ErrAppCreatingMC, err)
 	}
 
 	missionControlInput := &rover.MissionControlInput{
@@ -53,7 +53,7 @@ func (a *App) Run() error {
 
 	output, err := mc.Execute(missionControlInput)
 	if err != nil {
-		return fmt.Errorf("%w: %v", ErrAppExecMission, err)
+		return fmt.Errorf("%w: %w", ErrAppExecMission, err)
 	}
 
 	for _, singleRoverOutput := range output {
