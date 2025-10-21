@@ -160,17 +160,17 @@ func TestServer_RoutingOnly(t *testing.T) {
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			mockParser := new(MockParser)
-			MockMCFactory := new(MockMCFactory)
+			mockMCFactory := new(MockMCFactory)
 
 			if tc.wantStatusCode == http.StatusOK {
 				plateau, _ := rover.NewPlateau(5, 5, 2, 2)
 				mockParser.On("Parse", mock.Anything, mock.Anything).Return(plateau, []rover.RoverInstruction{}, nil)
 
 				mc, _ := rover.NewMissionControl(plateau)
-				MockMCFactory.On("Create", plateau).Return(mc, nil)
+				mockMCFactory.On("Create", plateau).Return(mc, nil)
 			}
 
-			server := NewServer(config.Default(), mockParser, MockMCFactory)
+			server := NewServer(config.Default(), mockParser, mockMCFactory)
 
 			router := server.Handler()
 
@@ -182,6 +182,9 @@ func TestServer_RoutingOnly(t *testing.T) {
 			router.ServeHTTP(rcap, req)
 
 			assert.Equal(t, tc.wantStatusCode, rcap.Code)
+
+			mockParser.AssertExpectations(t)
+			mockMCFactory.AssertExpectations(t)
 		})
 	}
 }
